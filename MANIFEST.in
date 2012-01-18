@@ -1,0 +1,3 @@
+include README.txt LICENSE.txt unit_tests.py
+recursive-include docs *
+recursive-include examples *.py
