@@ -9,7 +9,7 @@ setup(
     author_email = "eli@courtwright.org",
     description = "library for sending statistics over UDP to collectd servers",
     license = "BSD",
-    url = "https://github.com/EliAndrewC/collectd",
+    url = "https://github.com/appliedsec/collectd",
     
     download_url = "http://collectd.googlecode.com/files/collectd-1.0.tar.gz",
     
