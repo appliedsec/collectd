@@ -283,6 +283,11 @@ class SocketTests(BaseCase):
             self.assertTrue(struct.pack("<d", value) in packet)
             self.assertTrue(collectd.pack("test-"+name, value) in packet)
     
+    def test_plugin_name(self):
+        conn = collectd.Connection(collectd_port = self.TEST_PORT,
+                                   plugin_name = "dckx")
+        self.assertTrue("dckx" in self.send_and_recv(conn, foo=5))
+
     def test_plugin_inst(self):
         conn = collectd.Connection(collectd_port = self.TEST_PORT,
                                    plugin_inst = "xkcd")

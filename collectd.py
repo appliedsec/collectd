@@ -17,7 +17,6 @@ logger = logging.getLogger("collectd")
 SEND_INTERVAL = 10      # seconds
 MAX_PACKET_SIZE = 1024  # bytes
 
-PLUGIN_NAME = "any"
 PLUGIN_TYPE = "gauge"
 
 TYPE_HOST            = 0x0000
@@ -66,19 +65,19 @@ def pack(id, value):
     else:
         raise AssertionError("invalid type code " + str(id))
 
-def message_start(when=None, host=socket.gethostname(), plugin_inst=""):
+def message_start(when=None, host=socket.gethostname(), plugin_inst="", plugin_name="any"):
     return "".join([
         pack(TYPE_HOST, host),
         pack(TYPE_TIME, when or time.time()),
-        pack(TYPE_PLUGIN, PLUGIN_NAME),
+        pack(TYPE_PLUGIN, plugin_name),
         pack(TYPE_PLUGIN_INSTANCE, plugin_inst),
         pack(TYPE_TYPE, PLUGIN_TYPE),
         pack(TYPE_INTERVAL, SEND_INTERVAL)
     ])
 
-def messages(counts, when=None, host=socket.gethostname(), plugin_inst=""):
+def messages(counts, when=None, host=socket.gethostname(), plugin_inst="", plugin_name="any"):
     packets = []
-    start = message_start(when, host, plugin_inst)
+    start = message_start(when, host, plugin_name, plugin_inst)
     parts = [pack(name, count) for name,count in counts.items()]
     parts = [p for p in parts if len(start) + len(p) <= MAX_PACKET_SIZE]
     if parts:
@@ -156,8 +155,8 @@ class Connection(object):
     @synchronized
     def __new__(cls, hostname = socket.gethostname(),
                      collectd_host = "localhost", collectd_port = 25826,
-                     plugin_inst = ""):
-        id = (hostname, collectd_host, collectd_port, plugin_inst)
+                     plugin_inst = "", plugin_name = "any"):
+        id = (hostname, collectd_host, collectd_port, plugin_inst, plugin_name)
         if id in cls.instances:
             return cls.instances[id]
         else:
@@ -167,11 +166,12 @@ class Connection(object):
     
     def __init__(self, hostname = socket.gethostname(),
                        collectd_host = "localhost", collectd_port = 25826,
-                       plugin_inst = ""):
+                       plugin_inst = "", plugin_name = "any"):
         if "_counters" not in self.__dict__:
             self._lock = RLock()
             self._counters = {}
             self._plugin_inst = plugin_inst
+            self._plugin_name = plugin_name
             self._hostname = hostname
             self._collectd_addr = (collectd_host, collectd_port)
     
@@ -202,7 +202,7 @@ def take_snapshots():
 def send_stats(raise_on_empty = False):
     try:
         when, stats, conn = snaps.get(timeout = 0.1)
-        for message in messages(stats, when, conn._hostname, conn._plugin_inst):
+        for message in messages(stats, when, conn._hostname, conn._plugin_inst, conn._plugin_name):
             sock.sendto(message, conn._collectd_addr)
     except Empty:
         if raise_on_empty:
