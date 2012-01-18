@@ -8,4 +8,5 @@ bugfix: re-instantiating a Connection object causes __init__ to be called again
     https://github.com/appliedsec/collectd/issues/1
 
 feature: plugin name is now settable per Connection, "any" is still the default
+         (patch provided by Charles Hooper)
     https://github.com/appliedsec/collectd/issues/2
