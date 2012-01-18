@@ -1,6 +1,9 @@
 
 WHAT'S NEW IN 1.0.1
 -------------------
+hosting: collectd is now hosted on Github
+    https://github.com/appliedsec/collectd
+
 bugfix: re-instantiating a Connection object causes __init__ to be called again
     https://github.com/appliedsec/collectd/issues/1
 
