@@ -101,18 +101,15 @@ over that time increment.</p>
 </div>
 <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<p>This module is free for use under the BSD license.  It requires Python 2.6 and
-will presumably work with Python 2.7, although this hasn&#8217;t been tested.  It has
-no other dependencies.</p>
-<p>You may <a class="reference external" href="http://collectd.googlecode.com/files/collectd-1.0.tar.gz">click here</a> to
-download the collectd module.
-You may also run <tt class="docutils literal"><span class="pre">easy_install</span> <span class="pre">collectd</span></tt> if you have
-<a class="reference external" href="http://peak.telecommunity.com/DevCenter/EasyInstall">EasyInstall</a> on your
-system.  The project page for collectd in the Cheese Shop (aka the Python
-Package Index or PyPI)
-<a class="reference external" href="http://pypi.python.org/pypi/collectd/">may be found here</a>.</p>
+<p>This module is free for use under the BSD license.  It requires Python 2.6 or
+Python 2.7 and has no other dependencies.</p>
+<p>You may <a class="reference external" href="https://github.com/downloads/appliedsec/collectd/collectd-1.0.1.tar.gz">click here</a>
+to  download the collectd module. You may also run <tt class="docutils literal"><span class="pre">easy_install</span> <span class="pre">collectd</span></tt>
+if you have <a class="reference external" href="http://peak.telecommunity.com/DevCenter/EasyInstall">EasyInstall</a>
+on your system.  The project page for collectd in the Cheese Shop (aka the Python
+Package Index or PyPI) <a class="reference external" href="http://pypi.python.org/pypi/collectd/">may be found here</a>.</p>
 <p>You may also check out the development version of collectd with this command:</p>
-<p><tt class="docutils literal"><span class="pre">hg</span> <span class="pre">clone</span> <span class="pre">https://collectd.googlecode.com/hg/</span> <span class="pre">collectd</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/appliedsec/collectd.git</span></tt></p>
 </div>
 <div class="section" id="functions-and-classes">
 <h1>Functions and Classes<a class="headerlink" href="#functions-and-classes" title="Permalink to this headline">¶</a></h1>
@@ -130,13 +127,14 @@ function more than once throws an exception.</p>
 
 <dl class="class">
 <dt id="Connection">
-<em class="property">class </em><tt class="descname">Connection</tt><big>(</big><em>hostname = socket.gethostname()</em>, <em>collectd_host = &quot;localhost&quot;</em>, <em>collectd_port = 25826</em>, <em>plugin_inst = &quot;&quot;</em><big>)</big><a class="headerlink" href="#Connection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Connection objects may be instantiated with 4 optional arguments:</p>
+<em class="property">class </em><tt class="descname">Connection</tt><big>(</big><em>hostname = socket.gethostname()</em>, <em>collectd_host = &quot;localhost&quot;</em>, <em>collectd_port = 25826</em>, <em>plugin_inst = &quot;&quot;</em>, <em>plugin_name = &quot;any&quot;</em><big>)</big><a class="headerlink" href="#Connection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connection objects may be instantiated with 5 optional arguments:</p>
 <ul class="simple">
 <li><tt class="docutils literal"><span class="pre">hostname</span></tt>: the hostname you use to identify yourself to the collectd server; if omitted, this defaults to the result of <tt class="docutils literal"><span class="pre">socket.gethostname()</span></tt></li>
 <li><tt class="docutils literal"><span class="pre">collectd_host</span></tt>: the hostname or ip address of the collectd server to which we will send statistics</li>
 <li><tt class="docutils literal"><span class="pre">collectd_port</span></tt>: the port to which you will send statistics messages</li>
 <li><tt class="docutils literal"><span class="pre">plugin_inst</span></tt>: the plugin instance name which will be sent to the collectd server; this mostly affects the directory name used by the collectd rrdtool plugin</li>
+<li><tt class="docutils literal"><span class="pre">plugin_name</span></tt>: the name of the plugin with which the collectd server will associate your statistics; this mostly affects the directory tree used by the collectd rrdtool plugin</li>
 </ul>
 <p>Connection objects with identical parameters are singletons; in other
 words, <tt class="docutils literal"><span class="pre">Connection(&quot;foo&quot;)</span> <span class="pre">is</span> <span class="pre">Connection(&quot;foo&quot;)</span></tt> but

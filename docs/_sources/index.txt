@@ -51,22 +51,18 @@ over that time increment.
 
 Installation
 ============
-This module is free for use under the BSD license.  It requires Python 2.6 and
-will presumably work with Python 2.7, although this hasn't been tested.  It has
-no other dependencies.
+This module is free for use under the BSD license.  It requires Python 2.6 or 
+Python 2.7 and has no other dependencies.
 
-You may `click here <http://collectd.googlecode.com/files/collectd-1.0.tar.gz>`_ to 
-download the collectd module.
-You may also run ``easy_install collectd`` if you have 
-`EasyInstall <http://peak.telecommunity.com/DevCenter/EasyInstall>`_ on your
-system.  The project page for collectd in the Cheese Shop (aka the Python
-Package Index or PyPI)
-`may be found here <http://pypi.python.org/pypi/collectd/>`_.
+You may `click here <https://github.com/downloads/appliedsec/collectd/collectd-1.0.1.tar.gz>`_
+to  download the collectd module. You may also run ``easy_install collectd``
+if you have `EasyInstall <http://peak.telecommunity.com/DevCenter/EasyInstall>`_
+on your system.  The project page for collectd in the Cheese Shop (aka the Python
+Package Index or PyPI) `may be found here <http://pypi.python.org/pypi/collectd/>`_.
 
 You may also check out the development version of collectd with this command:
 
-``hg clone https://collectd.googlecode.com/hg/ collectd``
-
+``git clone https://github.com/appliedsec/collectd.git``
 
 
 Functions and Classes
@@ -85,14 +81,15 @@ Functions and Classes
 
 
 
-.. class:: Connection(hostname = socket.gethostname(), collectd_host = "localhost", collectd_port = 25826, plugin_inst = "")
+.. class:: Connection(hostname = socket.gethostname(), collectd_host = "localhost", collectd_port = 25826, plugin_inst = "", plugin_name = "any")
 
-    Connection objects may be instantiated with 4 optional arguments:
+    Connection objects may be instantiated with 5 optional arguments:
     
     * ``hostname``: the hostname you use to identify yourself to the collectd server; if omitted, this defaults to the result of ``socket.gethostname()``
     * ``collectd_host``: the hostname or ip address of the collectd server to which we will send statistics
     * ``collectd_port``: the port to which you will send statistics messages
     * ``plugin_inst``: the plugin instance name which will be sent to the collectd server; this mostly affects the directory name used by the collectd rrdtool plugin
+    * ``plugin_name``: the name of the plugin with which the collectd server will associate your statistics; this mostly affects the directory tree used by the collectd rrdtool plugin
     
     Connection objects with identical parameters are singletons; in other
     words, ``Connection("foo") is Connection("foo")`` but
