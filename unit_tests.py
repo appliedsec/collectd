@@ -261,8 +261,8 @@ class SocketTests(BaseCase):
         collectd.Connection.instances.clear()
         self.server.close()
     
-    def send_and_recv(self, conn=None, **stats):
-        (conn or self.conn).test.record(**stats)
+    def send_and_recv(self, conn=None, *specific, **stats):
+        (conn or self.conn).test.record(*specific, **stats)
         collectd.take_snapshots()
         collectd.send_stats(raise_on_empty = True)
         packet = self.server.recv(collectd.MAX_PACKET_SIZE)
@@ -292,6 +292,10 @@ class SocketTests(BaseCase):
         conn = collectd.Connection(collectd_port = self.TEST_PORT,
                                    plugin_inst = "xkcd")
         self.assertTrue("xkcd" in self.send_and_recv(conn, foo=5))
+    
+    def test_unicode(self):
+        self.send_and_recv(self.conn, u"admin.get_connect_server_status", hits = 1)
+        
 
 
 

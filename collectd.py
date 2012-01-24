@@ -128,14 +128,14 @@ class Counter(object):
             assert isinstance(specific, basestring)
             for stat, value in kwargs.items():
                 assert isinstance(value, (int, float))
-                self.counts[specific][stat] += value
+                self.counts[str(specific)][str(stat)] += value
     
     @swallow_errors
     @synchronized
     def set_exact(self, **kwargs):
         for stat, value in kwargs.items():
             assert isinstance(value, (int, float))
-            self.counts[""][stat] = value
+            self.counts[""][str(stat)] = value
     
     @synchronized
     def snapshot(self):
@@ -177,6 +177,9 @@ class Connection(object):
     
     @synchronized
     def __getattr__(self, name):
+        if name.startswith("_"):
+            raise AttributeError("{0} object has no attribute {1!r}".format(self.__class__.__name__, name))
+        
         if name not in self._counters:
             self._counters[name] = Counter(name)
         return self._counters[name]
