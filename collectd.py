@@ -12,6 +12,9 @@ from threading import RLock, Thread, Semaphore
 
 __all__ = ["Connection", "start_threads"]
 
+__version_info__ = (1, 0, 2, "final", 0)
+__version__ = "{0}.{1}.{2}".format(*__version_info__)
+
 logger = logging.getLogger("collectd")
 
 SEND_INTERVAL = 10      # seconds
