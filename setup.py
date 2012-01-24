@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name = "collectd",
-    version = "1.0.1",
+    version = "1.0.2",
     py_modules = ["collectd"],
     
     author = "Eli Courtwright",

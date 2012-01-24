@@ -1,4 +1,13 @@
 
+WHAT'S NEW IN 1.0.2
+-------------------
+bugfix: Counter.record and Counter.set_exact now accept unicode values
+    https://github.com/appliedsec/collectd/issues/2
+
+feature: collectd.__version__ and collectd.__version_info__ are now defined
+
+
+
 WHAT'S NEW IN 1.0.1
 -------------------
 hosting: collectd is now hosted on Github
