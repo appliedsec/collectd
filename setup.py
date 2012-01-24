@@ -11,7 +11,7 @@ setup(
     license = "BSD",
     url = "https://github.com/appliedsec/collectd",
     
-    download_url = "https://github.com/downloads/appliedsec/collectd/collectd-1.0.1.tar.gz",
+    download_url = "https://github.com/downloads/appliedsec/collectd/collectd-1.0.2.tar.gz",
     
     classifiers = [
         "Programming Language :: Python",
