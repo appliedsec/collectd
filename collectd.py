@@ -77,7 +77,7 @@ def message_start(when=None, host=socket.gethostname(), plugin_inst="", plugin_n
 
 def messages(counts, when=None, host=socket.gethostname(), plugin_inst="", plugin_name="any"):
     packets = []
-    start = message_start(when, host, plugin_name, plugin_inst)
+    start = message_start(when, host, plugin_inst, plugin_name)
     parts = [pack(name, count) for name,count in counts.items()]
     parts = [p for p in parts if len(start) + len(p) <= MAX_PACKET_SIZE]
     if parts:
