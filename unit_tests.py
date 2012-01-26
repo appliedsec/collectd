@@ -2,6 +2,7 @@ import time
 import struct
 import socket
 import logging
+from random import randrange
 from unittest import TestCase, main
 
 import collectd
@@ -21,7 +22,7 @@ class BaseCase(TestCase):
                 self.assertEqual(size, 12)
                 struct.unpack("!q", s[4:12])
             elif type_code in collectd.STRING_CODES:
-                self.assertEqual(s[size-1], "\x00")
+                self.assertEqual(s[size-1], "\0")
                 struct.unpack(str(size-4) + "s", s[4:size])
             else:
                 self.assertEqual(type_code, collectd.TYPE_VALUES)
@@ -279,7 +280,7 @@ class SocketTests(BaseCase):
         stats = {"foo": 345352, "bar": -5023123}
         packet = self.send_and_recv(**stats)
         for name, value in stats.items():
-            self.assertTrue(name + "\x00" in packet)
+            self.assertTrue(name + "\0" in packet)
             self.assertTrue(struct.pack("<d", value) in packet)
             self.assertTrue(collectd.pack("test-"+name, value) in packet)
     
@@ -295,7 +296,33 @@ class SocketTests(BaseCase):
     
     def test_unicode(self):
         self.send_and_recv(self.conn, u"admin.get_connect_server_status", hits = 1)
+    
+    def test_too_large(self):
+        size = collectd.MAX_PACKET_SIZE // 2
+        stats = [("X"*size, 123), ("Y"*size, 321)]
+        self.conn.test.record(**dict(stats))
+        collectd.take_snapshots()
+        collectd.send_stats(raise_on_empty = True)
+        for name,val in stats:
+            packet = self.server.recv(collectd.MAX_PACKET_SIZE)
+            self.assertTrue(name + "\0" in packet)
+            self.assertTrue(struct.pack("<d", val) in packet)
+            self.assertValidPacket(8, packet)
+    
+    def test_too_many(self):
+        stats = [("x{0:02}".format(i), randrange(256)) for i in range(50)]
+        self.conn.test.record(**dict(stats))
+        collectd.take_snapshots()
+        collectd.send_stats(raise_on_empty = True)
         
+        packets = [self.server.recv(collectd.MAX_PACKET_SIZE) for i in range(2)]
+        for packet in packets:
+            self.assertValidPacket(8, packet)
+        
+        data = "".join(packets)
+        for name,val in stats:
+            self.assertTrue(name + "\0" in data)
+            self.assertTrue(struct.pack("<d", val) in data)
 
 
 
