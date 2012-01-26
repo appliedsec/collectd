@@ -295,7 +295,7 @@ class SocketTests(BaseCase):
         self.assertTrue("xkcd" in self.send_and_recv(conn, foo=5))
     
     def test_unicode(self):
-        self.send_and_recv(self.conn, u"admin.get_connect_server_status", hits = 1)
+        self.send_and_recv(self.conn, u"foo.bar", hits = 1)
     
     def test_too_large(self):
         size = collectd.MAX_PACKET_SIZE // 2
