@@ -22,14 +22,15 @@ class BaseCase(TestCase):
                 self.assertEqual(size, 12)
                 struct.unpack("!q", s[4:12])
             elif type_code in collectd.STRING_CODES:
-                self.assertEqual(s[size-1], "\0")
+                self.assertIn(s[size-1], [0, "\0"])
                 struct.unpack(str(size-4) + "s", s[4:size])
             else:
                 self.assertEqual(type_code, collectd.TYPE_VALUES)
                 values = s[6:size]
                 count = 0
                 while values:
-                    value_code = struct.unpack("B", values[0])[0]
+                    val = values[0]
+                    value_code = struct.unpack("B", val)[0] if isinstance(val, collectd.StringTypes) else val
                     self.assertTrue(value_code in collectd.VALUE_CODES)
                     struct.unpack(collectd.VALUE_CODES[value_code], values[1:9])
                     values = values[9:]
@@ -277,22 +278,22 @@ class SocketTests(BaseCase):
         self.send_and_recv(foo = 5)
     
     def test_multiple(self):
-        stats = {"foo": 345352, "bar": -5023123}
+        stats = {u"foo": 345352, u"bar": -5023123}
         packet = self.send_and_recv(**stats)
         for name, value in stats.items():
-            self.assertTrue(name + "\0" in packet)
+            self.assertTrue(name.encode("UTF-8") + b"\0" in packet)
             self.assertTrue(struct.pack("<d", value) in packet)
             self.assertTrue(collectd.pack("test-"+name, value) in packet)
     
     def test_plugin_name(self):
         conn = collectd.Connection(collectd_port = self.TEST_PORT,
                                    plugin_name = "dckx")
-        self.assertTrue("dckx" in self.send_and_recv(conn, foo=5))
+        self.assertTrue(b"dckx" in self.send_and_recv(conn, foo=5))
 
     def test_plugin_inst(self):
         conn = collectd.Connection(collectd_port = self.TEST_PORT,
                                    plugin_inst = "xkcd")
-        self.assertTrue("xkcd" in self.send_and_recv(conn, foo=5))
+        self.assertTrue(b"xkcd" in self.send_and_recv(conn, foo=5))
     
     def test_unicode(self):
         self.send_and_recv(self.conn, u"foo.bar", hits = 1)
@@ -305,7 +306,7 @@ class SocketTests(BaseCase):
         collectd.send_stats(raise_on_empty = True)
         for name,val in stats:
             packet = self.server.recv(collectd.MAX_PACKET_SIZE)
-            self.assertTrue(name + "\0" in packet)
+            self.assertTrue(name.encode("UTF-8") + b"\0" in packet)
             self.assertTrue(struct.pack("<d", val) in packet)
             self.assertValidPacket(8, packet)
     
@@ -319,9 +320,9 @@ class SocketTests(BaseCase):
         for packet in packets:
             self.assertValidPacket(8, packet)
         
-        data = "".join(packets)
+        data = b"".join(packets)
         for name,val in stats:
-            self.assertTrue(name + "\0" in data)
+            self.assertTrue(name.encode("UTF-8") + b"\0" in data)
             self.assertTrue(struct.pack("<d", val) in data)
 
 

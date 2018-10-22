@@ -1,13 +1,18 @@
 import re
+import sys
 import time
 import socket
 import struct
 import logging
 import traceback
 from functools import wraps
-from Queue import Queue, Empty
 from collections import defaultdict
 from threading import RLock, Thread, Semaphore
+
+try:
+    from Queue import Queue, Empty  # Python 2
+except ImportError:
+    from queue import Queue, Empty  # Python 3
 
 
 __all__ = ["Connection", "start_threads"]
@@ -16,6 +21,8 @@ __version_info__ = (1, 0, 2, "final", 0)
 __version__ = "{0}.{1}.{2}".format(*__version_info__)
 
 logger = logging.getLogger("collectd")
+
+StringTypes = (type(b""), type(u""))
 
 SEND_INTERVAL = 10      # seconds
 MAX_PACKET_SIZE = 1024  # bytes
@@ -46,20 +53,24 @@ VALUE_CODES = {
 
 
 def pack_numeric(type_code, number):
-    return struct.pack("!HHq", type_code, 12, number)
+    return struct.pack("!HHq", type_code, 12, int(number))
 
 def pack_string(type_code, string):
-    return struct.pack("!HH", type_code, 5 + len(string)) + string + "\0"
+    if isinstance(string, type(u"")):
+        string = string.encode("UTF-8")
+    return struct.pack("!HH", type_code, 5 + len(string)) + string + b"\0"
 
 def pack_value(name, value):
-    return "".join([
+    if isinstance(value, type(u"")):
+        value = value.encode("UTF-8")
+    return b"".join([
         pack(TYPE_TYPE_INSTANCE, name),
         struct.pack("!HHH", TYPE_VALUES, 15, 1),
         struct.pack("<Bd", VALUE_GAUGE, value)
     ])
 
 def pack(id, value):
-    if isinstance(id, basestring):
+    if isinstance(id, StringTypes):
         return pack_value(id, value)
     elif id in LONG_INT_CODES:
         return pack_numeric(id, value)
@@ -69,7 +80,7 @@ def pack(id, value):
         raise AssertionError("invalid type code " + str(id))
 
 def message_start(when=None, host=socket.gethostname(), plugin_inst="", plugin_name="any"):
-    return "".join([
+    return b"".join([
         pack(TYPE_HOST, host),
         pack(TYPE_TIME, when or time.time()),
         pack(TYPE_PLUGIN, plugin_name),
@@ -87,16 +98,18 @@ def messages(counts, when=None, host=socket.gethostname(), plugin_inst="", plugi
         curr, curr_len = [start], len(start)
         for part in parts:
             if curr_len + len(part) > MAX_PACKET_SIZE:
-                packets.append("".join(curr))
+                packets.append(b"".join(curr))
                 curr, curr_len = [start], len(start)
             curr.append(part)
             curr_len += len(part)
-        packets.append("".join(curr))
+        packets.append(b"".join(curr))
     return packets
 
 
 
 def sanitize(s):
+    if sys.version_info.major == 3 and isinstance(s, bytes):
+        s = s.decode("UTF-8")
     return re.sub(r"[^a-zA-Z0-9]+", "_", s).strip("_")
 
 def swallow_errors(func):
@@ -127,18 +140,20 @@ class Counter(object):
     @swallow_errors
     @synchronized
     def record(self, *args, **kwargs):
-        for specific in list(args) + [""]:
-            assert isinstance(specific, basestring)
+        for specific in list(args) + [b""]:
+            assert isinstance(specific, StringTypes), str(type(specific))
+            if isinstance(specific, type(u"")):
+                specific = specific.encode("UTF-8")
             for stat, value in kwargs.items():
                 assert isinstance(value, (int, float))
-                self.counts[str(specific)][str(stat)] += value
+                self.counts[specific][stat] += value
     
     @swallow_errors
     @synchronized
     def set_exact(self, **kwargs):
         for stat, value in kwargs.items():
             assert isinstance(value, (int, float))
-            self.counts[""][str(stat)] = value
+            self.counts[b""][str(stat)] = value
     
     @synchronized
     def snapshot(self):
